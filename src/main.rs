@@ -17,6 +17,8 @@ fn main() {
         let beta = b_denominator.dot(&b_numerator);
         println!("result:\n {:?}", beta);
 
+        let mut x_ = m.slice(s![.., 1..]).into_owned();
+        rank(&mut x_);
     }
 }
 
