@@ -1,0 +1,14 @@
+[package]
+name = "lin_reg"
+version = "0.1.0"
+authors = ["wbglaeser <ben.glaeser@tuta.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv = "1.1.3"
+serde = { version = "1", features = ["derive"] }
+ndarray = "0.13.1"
+ndarray-csv = {version = "0.4.1"}
+darn = {version = "0.1.7"}
