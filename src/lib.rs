@@ -137,18 +137,17 @@ fn gaussian_elemination(mat: &Array2<f64>) -> Array2<f64> {
 
     let mut red_ef = mat.clone();
 
-    for i in 0..m {
-        
+    for i in 0..m { 
         if i < n {
             if red_ef[[i, i]] == 0. {
                 let mut switch_row = 0;
-                let mut max_val = 0.;
                 for s in i..n {
-                    if red_ef[[s, i]].abs() >= max_val {
+                    if red_ef[[s, i]].abs() > 0. {
                         switch_row = s;
-                        max_val = red_ef[[s, i]].abs();
                     }
                 }
+                if switch_row == 0 { break; }   
+                
                 // switch rows
                 let old_row = red_ef.slice(s![i, ..]).into_owned();
                 let new_row = red_ef.slice(s![switch_row, ..]).into_owned();
@@ -181,7 +180,7 @@ fn gaussian_elemination(mat: &Array2<f64>) -> Array2<f64> {
 }
 
 // gaussian elimination algorithm to find rank
-pub fn rank(mat: &mut Array2<f64>) {
+pub fn rank(mat: &mut Array2<f64>) -> usize {
 
     let reduced_ef = gaussian_elemination(&mat); 
     let n = reduced_ef.shape()[0];
@@ -193,7 +192,6 @@ pub fn rank(mat: &mut Array2<f64>) {
             rank -= 1;
             continue;
         }
-
         for j in 0..r {
             if reduced_ef[[r,j]] != 0. {
                 rank -= 1;
@@ -208,8 +206,7 @@ pub fn rank(mat: &mut Array2<f64>) {
                 }
             }
         }
-
-
     } 
+    rank
 }
 
