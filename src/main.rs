@@ -7,18 +7,10 @@ fn main() {
     let matrix_raw = read_data(file_name);
     
     if let Ok(m) = matrix_raw {
-        let y = m.slice(s![.., 0]);
-        let x = m.slice(s![.., 1..]);
-        let b_numerator = x.t().dot(&y);
-
-        let xx = x.t().dot(&x);
-        let b_denominator = invert_matrix(&xx);
-
-        let beta = b_denominator.dot(&b_numerator);
-        println!("result:\n {:?}", beta);
-
-        let mut x_ = m.slice(s![.., 1..]).into_owned();
-        rank(&mut x_);
+        let y = m.slice(s![.., 0]).into_owned();
+        let x = m.slice(s![.., 1..]).into_owned();
+    
+        let _b = linear_regression(&y, &x);
     }
 }
 

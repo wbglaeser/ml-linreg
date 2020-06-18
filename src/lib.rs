@@ -23,6 +23,21 @@ pub fn read_data(file_name: &str) -> Result<Array2<f64>, Box<dyn Error>> {
     Ok(matrix)
 }
 
+pub fn linear_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>) {
+
+    // shape
+    let n = x.shape()[0];
+    let m = x.shape()[1];
+
+    // first check that rank is fine
+    //
+    let rank = rank(&x);
+    if rank != m {
+        panic!("There is linear dependency in our independent variables");
+    }
+    
+}
+
 // invert matrix using lu decomposition
 pub fn invert_matrix(m: &Array2<f64>) -> Array<f64,Ix2> {
     
@@ -180,7 +195,7 @@ fn gaussian_elemination(mat: &Array2<f64>) -> Array2<f64> {
 }
 
 // gaussian elimination algorithm to find rank
-pub fn rank(mat: &mut Array2<f64>) -> usize {
+pub fn rank(mat: &Array2<f64>) -> usize {
 
     let reduced_ef = gaussian_elemination(&mat); 
     let n = reduced_ef.shape()[0];
