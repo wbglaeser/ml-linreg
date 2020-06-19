@@ -25,19 +25,57 @@ pub fn read_data(file_name: &str) -> Result<Array2<f64>, Box<dyn Error>> {
 
 pub fn linear_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>) {
 
-    // shape
-    let n = x.shape()[0];
-    let m = x.shape()[1];
+    // check if matrix is collinear
+    check_mcollinearity(x);
 
-    // first check that rank is fine
-    //
-    let rank = rank(&x);
-    if rank != m {
-        panic!("There is linear dependency in our independent variables");
-    }
-    
+    // compute numerator
+    let xy = x.t().dot(y);
+
+    // compute denominator
+    let xx = x.t().dot(x);
+    let lu = lu_decomposition(&xx);
+    let l = lu.0;
+    let u = lu.1;
+    let l_invert = invert_lower(&l);
+    let u_invert = invert_upper(&u);
+    let xx_invert = u_invert.dot(&l_invert);
+
+    // compute results
+    let beta_hat = xx_invert.dot(&xy);
+
+    println!("{:?}", beta_hat);
 }
 
+pub fn ridge_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>, a: f64) {
+    
+    // check if matrix is collinear
+    check_mcollinearity(x);
+
+    // compute numerator
+    let xy = x.t().dot(y);
+
+    // compute denominator
+    let xx = x.t().dot(x);
+    
+    // add regularisation parameter
+    let rr = setup_ridge_factor(x, a);
+    let xxrr = &xx + &rr;
+    println!("{:?}", xxrr);
+
+    let lu = lu_decomposition(&xxrr);
+    let l = lu.0;
+    let u = lu.1;
+    let l_invert = invert_lower(&l);
+    let u_invert = invert_upper(&u);
+    let xx_invert = u_invert.dot(&l_invert);
+
+    // compute results
+    let beta_hat = xx_invert.dot(&xy);
+
+    println!("{:?}", beta_hat);
+}
+
+/// auxilliary functions
 // invert matrix using lu decomposition
 pub fn invert_matrix(m: &Array2<f64>) -> Array<f64,Ix2> {
     
@@ -223,5 +261,27 @@ pub fn rank(mat: &Array2<f64>) -> usize {
         }
     } 
     rank
+}
+
+fn setup_ridge_factor(x: &Array2<f64>, a: f64) -> Array2<f64> {
+
+    let m = x.shape()[1];
+    let mut rmat = Array::<f64,Ix2>::zeros((m, m).f());
+    for i in 0..m {
+        rmat[[i,i]] = 1. * a;
+    }
+    rmat.dot(&rmat)
+}
+
+fn check_mcollinearity(x: &Array<f64,Ix2>) {
+    
+    // shape
+    let m = x.shape()[1];
+
+    // first check that rank is fine
+    let rank = rank(&x);
+    if rank != m {
+        panic!("There is linear dependency in our independent variables");
+    }
 }
 

@@ -12,3 +12,4 @@ serde = { version = "1", features = ["derive"] }
 ndarray = "0.13.1"
 ndarray-csv = {version = "0.4.1"}
 darn = {version = "0.1.7"}
+structopt = "0.3.15"

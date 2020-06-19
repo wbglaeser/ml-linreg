@@ -9,7 +9,8 @@ fn main() {
     if let Ok(m) = matrix_raw {
         let y = m.slice(s![.., 0]).into_owned();
         let x = m.slice(s![.., 1..]).into_owned();
-    
+   
+        let _be = ridge_regression(&y, &x, 0.1);
         let _b = linear_regression(&y, &x);
     }
 }
