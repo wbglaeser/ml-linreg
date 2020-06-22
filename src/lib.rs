@@ -43,7 +43,9 @@ pub fn linear_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>) {
     // compute results
     let beta_hat = xx_invert.dot(&xy);
 
-    println!("{:?}", beta_hat);
+    println!("Results Linear Regression:\n{:?}", beta_hat);
+    let se = compute_error_sample_estimator(y, x, &beta_hat);
+    compute_coefficient_errors(&xx_invert, se);
 }
 
 pub fn ridge_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>, a: f64) {
@@ -60,7 +62,6 @@ pub fn ridge_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>, a: f64) {
     // add regularisation parameter
     let rr = setup_ridge_factor(x, a);
     let xxrr = &xx + &rr;
-    println!("{:?}", xxrr);
 
     let lu = lu_decomposition(&xxrr);
     let l = lu.0;
@@ -71,8 +72,7 @@ pub fn ridge_regression(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>, a: f64) {
 
     // compute results
     let beta_hat = xx_invert.dot(&xy);
-
-    println!("{:?}", beta_hat);
+    println!("Results Ridge Regression:\n{:?}", beta_hat);
 }
 
 /// auxilliary functions
@@ -238,38 +238,49 @@ pub fn rank(mat: &Array2<f64>) -> usize {
     let reduced_ef = gaussian_elemination(&mat); 
     let n = reduced_ef.shape()[0];
     let m = reduced_ef.shape()[1];
-    let mut rank = m.clone();
-
+    let mut rank = 0;
+    
     for r in 0..n {
-        if reduced_ef[[r,r]] != 1. {
-            rank -= 1;
-            continue;
+        let mut cond_leading_1 = false;
+        let mut cond_leading_1_idx = 0;
+        let mut cond_col_0 = false;
+
+        // check for leading 1
+        for j in 0..m {
+            if reduced_ef[[r, j]] == 0. {
+                    continue
+            } else if reduced_ef[[r, j]] == 1. {
+                cond_leading_1 = true;
+                cond_leading_1_idx = j;
+                break
+            } else { break }
         }
-        for j in 0..r {
-            if reduced_ef[[r,j]] != 0. {
-                rank -= 1;
-                continue;
-            }
-        }
-        for c in 0..n {
-            if c != r {
-                if reduced_ef[[c,r]] != 0. {
-                    rank -= 1;
-                    continue;
+
+        // check for zero in remaining columns
+        if cond_leading_1 {
+            let mut sum = 0.;
+            for v in 0..n {
+                if (reduced_ef[[v, cond_leading_1_idx]] != 0.) & (reduced_ef[[v, cond_leading_1_idx]] != 1.) {
+                    break;
+                } else {
+                    sum += reduced_ef[[v, cond_leading_1_idx]];
                 }
             }
+            if sum == 1. {
+                cond_col_0 = true;
+            }
         }
-    } 
+        if cond_col_0 & cond_leading_1 {
+            rank += 1;
+        }
+    }
     rank
 }
 
 fn setup_ridge_factor(x: &Array2<f64>, a: f64) -> Array2<f64> {
 
     let m = x.shape()[1];
-    let mut rmat = Array::<f64,Ix2>::zeros((m, m).f());
-    for i in 0..m {
-        rmat[[i,i]] = 1. * a;
-    }
+    let rmat = Array::<f64,Ix2>::eye(m);
     rmat.dot(&rmat)
 }
 
@@ -285,3 +296,19 @@ fn check_mcollinearity(x: &Array<f64,Ix2>) {
     }
 }
 
+fn compute_error_sample_estimator(y: &Array<f64,Ix1>, x: &Array<f64, Ix2>, beta: &Array<f64,Ix1>) -> f64 {
+
+    let y_hat = x.dot(beta);    
+    let residuals = y-&y_hat;
+    let squared_residuals = residuals.map(|x| x*x);
+    let sum_squared_residuals = squared_residuals.scalar_sum();
+    1./(residuals.shape()[0] as f64 - 2.) * sum_squared_residuals
+}
+
+fn compute_coefficient_errors(x: &Array<f64, Ix2>, a: f64) {
+    
+    let error_var = (a * x).diag().into_owned();
+    let error_std = error_var.map(|v| v.sqrt());
+    println!("coefficient errors: {:?}", error_std);
+
+}
