@@ -4,7 +4,7 @@ This repo contains code for a small rust application that runs a number of simpl
 regression algorithms. There exist a whole range of statistical software tools designed
 to perform regression tasks with precision and speed. This project was designed to
 both understand algorithmic solutions to common optimisation problems such as matrix
-decompositions as well as well data handling capacities with rust language.
+decompositions as well as data handling capacities with rust language.
 
 
 #### Installation
